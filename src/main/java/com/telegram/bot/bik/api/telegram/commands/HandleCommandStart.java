@@ -1,6 +1,7 @@
 package com.telegram.bot.bik.api.telegram.commands;
 
 import com.telegram.bot.bik.api.parser.ParserNameSpecialization;
+import com.telegram.bot.bik.api.telegram.handler.MessageDialogFacade;
 import com.telegram.bot.bik.enums.CommandEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,19 +23,21 @@ import static com.telegram.bot.bik.enums.CallbackNameEnum.SPECIALIZATION;
 public class HandleCommandStart implements HandleCommand {
     public static final Set<String> COMMANDS = Set.of(CommandEnum.START.getCommand());
     private final ParserNameSpecialization parserNameSpecialization;
+    private final MessageDialogFacade messageDialogFacade;
 
     @Override
     public BotApiMethod<?> buildMessageByCommand(Message message)  {
         var specialties = parserNameSpecialization.parseSpecialization();
         InlineKeyboardMarkup inlineKeyboardMarkup = buildStartKeyboard(specialties);
+        return messageDialogFacade.doMessage(message);
 
-        return SendMessage.builder()
-                .text("Вас приветствует бот, позволящий просмотреть расписание " +
-                        "Белгородского индустриального колледжа. " +
-                        "Выберите специальность на которой учитесь.")
-                .chatId(message.getChatId())
-                .replyMarkup(inlineKeyboardMarkup)
-                .build();
+//        return SendMessage.builder()
+//                .text("Вас приветствует бот, позволящий просмотреть расписание " +
+//                        "Белгородского индустриального колледжа. " +
+//                        "Выберите специальность на которой учитесь.")
+//                .chatId(message.getChatId())
+//                .replyMarkup(inlineKeyboardMarkup)
+//                .build();
     }
 
     private InlineKeyboardMarkup buildStartKeyboard(Set<String> specialties) {

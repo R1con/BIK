@@ -1,22 +1,26 @@
 package com.telegram.bot.bik.api.telegram.handler.core;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethodMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-public abstract class AbstractMessageHandler implements Filter{
-    private Filter next;
+import java.util.Optional;
 
-    public AbstractMessageHandler() {
-    }
 
-    public void setNext(Filter next) {
+public abstract class AbstractMessageHandler implements Filter {
+    private  Filter next;
+
+    @Override
+    public final void setNext(Filter next) {
         this.next = next;
     }
 
+    @Override
     public final BotApiMethod<?> doMessage(Message messageUser) {
-        this.doMessageAndApplyNext(messageUser).getMethod();
-        return this.next.doMessage(messageUser);
+        return doMessageAndApplyNext(messageUser);
     }
 
-    protected abstract BotApiMethod<Message> doMessageAndApplyNext(Message messageUser);
+    protected abstract BotApiMethod<?> doMessageAndApplyNext(Message messageUser);
 }

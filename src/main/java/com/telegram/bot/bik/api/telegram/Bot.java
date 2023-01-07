@@ -1,6 +1,7 @@
 package com.telegram.bot.bik.api.telegram;
 
 import com.telegram.bot.bik.api.telegram.commands.HandleCommand;
+import com.telegram.bot.bik.api.telegram.handler.MessageDialogFacade;
 import com.telegram.bot.bik.config.properties.TelegramProperties;
 import com.telegram.bot.bik.map.CallbackMap;
 import com.telegram.bot.bik.map.CommandMap;
@@ -22,6 +23,7 @@ public class Bot extends TelegramLongPollingBot {
     private final TelegramProperties telegramProperties;
     private final CallbackMap callbackMap;
     private final CommandMap commandMap;
+    private final MessageDialogFacade messageDialogFacade;
 
     @SneakyThrows
     @Override
@@ -32,6 +34,9 @@ public class Bot extends TelegramLongPollingBot {
         }else if (update.hasMessage()) {
             if (message.getText().startsWith("/")) {
                 handleCommand(message);
+            }
+            if (message.hasText()) {
+                execute(messageDialogFacade.doMessage(message));
             }
         }
     }
