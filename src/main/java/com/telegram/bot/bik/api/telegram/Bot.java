@@ -1,10 +1,11 @@
 package com.telegram.bot.bik.api.telegram;
 
 import com.telegram.bot.bik.api.telegram.commands.HandleCommand;
+import com.telegram.bot.bik.api.telegram.handler.core.StateContext;
 import com.telegram.bot.bik.config.properties.TelegramProperties;
 import com.telegram.bot.bik.map.CallbackMap;
 import com.telegram.bot.bik.map.CommandMap;
-import com.telegram.bot.bik.service.HandleCallback;
+import com.telegram.bot.bik.service.callback.HandleCallback;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ public class Bot extends TelegramLongPollingBot {
     private final TelegramProperties telegramProperties;
     private final CallbackMap callbackMap;
     private final CommandMap commandMap;
+    private final StateContext stateContext;
 
     @SneakyThrows
     @Override
@@ -30,10 +32,16 @@ public class Bot extends TelegramLongPollingBot {
         if (update.hasCallbackQuery()) {
             handleCallbackQeury(update);
         }else if (update.hasMessage()) {
-            if (message.getText().startsWith("/")) {
+            if (isCommand(message)) {
                 handleCommand(message);
+            } else if (message.hasText()){
+                execute(stateContext.getHandler(message.getChatId(), message));
             }
         }
+    }
+
+    private static boolean isCommand(Message message) {
+        return message.getText().startsWith("/");
     }
 
     private void handleCommand(Message message) throws TelegramApiException {
@@ -45,7 +53,7 @@ public class Bot extends TelegramLongPollingBot {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         String data = callbackQuery.getData();
 
-        log.info("callback = {} pressed by {} with tgId = {}", data, callbackQuery.getFrom().getUserName(), callbackQuery.getMessage().getChatId());
+        log.info("[CALLBACK] callback = {} pressed by {} with tgId = {}", data, callbackQuery.getFrom().getUserName(), callbackQuery.getMessage().getChatId());
         HandleCallback callback = callbackMap.getCallback(data.split("/")[0]);
         execute(callback.buildMessageByCallback(callbackQuery));
     }

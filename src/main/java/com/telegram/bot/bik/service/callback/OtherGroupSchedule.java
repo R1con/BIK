@@ -1,65 +1,72 @@
 package com.telegram.bot.bik.service.callback;
 
-import com.telegram.bot.bik.api.parser.ParserGroup;
+import com.telegram.bot.bik.api.parser.ParserNameSpecialization;
 import com.telegram.bot.bik.enums.CallbackNameEnum;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
-import static com.telegram.bot.bik.enums.CallbackNameEnum.GROUPS_BY_SPESIALIZATION;
+import static com.telegram.bot.bik.enums.CallbackNameEnum.MENU_SELECT_GROUP;
+import static com.telegram.bot.bik.enums.CallbackNameEnum.OTHER_GROUP_SCHEDULE;
 import static com.telegram.bot.bik.enums.CallbackNameEnum.SPECIALIZATION;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
-public class CallbackGeneratorGroupByName implements HandleCallback {
-    public static final int SIZE_KEYBOARD_ROW = 4;
-    private final ParserGroup parserGroup;
+public class OtherGroupSchedule implements HandleCallback {
+    private final ParserNameSpecialization parserNameSpecialization;
+
     @Override
     public BotApiMethod<?> buildMessageByCallback(CallbackQuery callbackQuery) {
-        String nameGroup = callbackQuery.getData().split("/")[1];
-        List<String> groups = parserGroup.parse(nameGroup);
+        var specialties = parserNameSpecialization.parseSpecialization();
 
         return EditMessageText.builder()
-                .text("Hellow " + nameGroup)
-                .messageId(callbackQuery.getMessage().getMessageId())
+                .text("Вас приветствует бот, позволящий просмотреть расписание " +
+                        "Белгородского индустриального колледжа. " +
+                        "Выберите специальность на которой учитесь.")
                 .chatId(callbackQuery.getMessage().getChatId())
-                .replyMarkup(buildStartKeyboard(groups, nameGroup))
-                .parseMode(ParseMode.MARKDOWN)
+                .messageId(callbackQuery.getMessage().getMessageId())
+                .replyMarkup(buildStartKeyboard(specialties))
                 .build();
     }
 
 
-
-    private InlineKeyboardMarkup buildStartKeyboard(List<String> specialties, String nameGroup) {
+    private InlineKeyboardMarkup buildStartKeyboard(Set<String> specialties) {
         List<List<InlineKeyboardButton>> specializationButtons = new ArrayList<>();
         List<InlineKeyboardButton> row1 = new ArrayList<>();
+        List<InlineKeyboardButton> row2 = new ArrayList<>();
 
         for (String specialization : specialties) {
             row1.add(InlineKeyboardButton.builder()
                     .text(specialization)
-                    .callbackData(GROUPS_BY_SPESIALIZATION + "/" + specialization + "/" + nameGroup)
+                    .callbackData(SPECIALIZATION + "/" + specialization)
                     .build());
 
-            if (row1.size() == SIZE_KEYBOARD_ROW) {
+            if (row1.size() == 4) {
                 List<InlineKeyboardButton> buttons = new ArrayList<>(row1);
                 specializationButtons.add(buttons);
                 row1.clear();
             }
         }
 
-        if (row1.size() < SIZE_KEYBOARD_ROW) {
+        if (row1.size() < 4) {
             specializationButtons.add(row1);
         }
 
+        row2.add(InlineKeyboardButton.builder()
+                        .text("⬅️ Назад")
+                        .callbackData(MENU_SELECT_GROUP.toString())
+                .build()
+        );
+
+        specializationButtons.add(row2);
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(specializationButtons)
@@ -68,6 +75,6 @@ public class CallbackGeneratorGroupByName implements HandleCallback {
 
     @Override
     public CallbackNameEnum getSupportedCallback() {
-        return SPECIALIZATION;
+        return OTHER_GROUP_SCHEDULE;
     }
 }

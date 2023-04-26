@@ -2,6 +2,7 @@ package com.telegram.bot.bik.api.parser;
 
 import com.telegram.bot.bik.config.properties.SiteProperties;
 import com.telegram.bot.bik.exception.ConnectionSiteException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -13,24 +14,20 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.net.URL;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class ConnectionToSite {
     private final SiteProperties siteProperties;
-    private final AbsSender absSender;
-
-    public ConnectionToSite(SiteProperties siteProperties, @Lazy AbsSender absSender) {
-        this.siteProperties = siteProperties;
-        this.absSender = absSender;
-    }
+    public static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0";
 
     public Document connectToMainPage() {
-        String userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0";
         Document document;
         try {
             document = Jsoup.connect(siteProperties.getSchedule())
-//                    .userAgent(userAgent)
+//                    .userAgent(USER_AGENT)
                     .ignoreContentType(true)
                     .get();
             return document;
@@ -40,12 +37,11 @@ public class ConnectionToSite {
         }
     }
 
-    public Document connectionToCurrentSchedule(int id) {
-        String userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0";
+    public Document connectionToCurrentSchedule(String id) {
         Document document;
         try {
             document = Jsoup.connect(siteProperties.getGroup() + id)
-//                    .userAgent(userAgent)
+                    .userAgent(USER_AGENT)
                     .ignoreContentType(true)
                     .get();
             return document;

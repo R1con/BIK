@@ -1,4 +1,4 @@
-package com.telegram.bot.bik.service;
+package com.telegram.bot.bik.service.callback;
 
 import com.telegram.bot.bik.enums.CallbackNameEnum;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;

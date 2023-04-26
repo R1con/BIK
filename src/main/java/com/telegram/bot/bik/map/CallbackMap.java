@@ -1,6 +1,6 @@
 package com.telegram.bot.bik.map;
 
-import com.telegram.bot.bik.service.HandleCallback;
+import com.telegram.bot.bik.service.callback.HandleCallback;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
