@@ -16,14 +16,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CurrentScheduleGroup {
 
-    public static final String COLOR_DATE_SCHEDULE = "#E0FFFF";
+    private static final String COLOR_DATE_SCHEDULE = "#E0FFFF";
 
     private final ConnectionToSite connectionToSite;
     private final Validable dateValidation;
 
     public String findIdForCurrentGroup(String id, String name) {
         Document document = connectionToSite.connectToMainPage();
-        Elements elementsByClassShadow = document.getElementsByClass("modernsmall");
+        Elements elementsByClassShadow = document.getElementsByClass(TagEnum.MODERNSMALL.getName());
 
         for (Element element : elementsByClassShadow) {
             String group = element.text();
@@ -47,40 +47,44 @@ public class CurrentScheduleGroup {
         for (Element element : shadow) {
             String style = element.childNodes().get(0).attributes().get(TagEnum.BG_COLOR.getName());
             if (style.equals(COLOR_DATE_SCHEDULE)) {
-                text.append('\n');
-                text.append('\n');
-                centerDateText(text);
-                centerDateText(text);
-                text.append("*");
-                text.append(element.getElementsByTag(TagEnum.TD.getName()).text());
-                text.append("*");
-                centerDateText(text);
-                centerDateText(text);
-
+                prepareTextDate(text, element);
             }
 
             Elements shadow1 = element.getElementsByClass(TagEnum.SHADOW.getName());
             if (!shadow1.isEmpty()) {
-                for (int i = 0; i < shadow1.size(); i++) {
-                    Elements td = shadow1.get(i).getElementsByTag(TagEnum.TD.getName());
-                    if (!td.isEmpty() && StringUtils.isNumeric(shadow1.get(0).getElementsByTag(TagEnum.TD.getName()).get(0).text())) {
-                        for (Element element1 : shadow1) {
-                            if (dateValidation.validate()) {
-                                text.append('\n');
-                            }
-                            if (Character.isDigit(element1.text().charAt(0)) && element1.text().charAt(1) == 32) {
-                                text.append("_");
-                                text.append(element1.text().replace(" ", "  "));
-                                text.append("_");
-                            }
-                        }
-                    }
+                Elements tagTds = shadow1.get(0).getElementsByTag(TagEnum.TD.getName());
+                if (!tagTds.isEmpty() && StringUtils.isNumeric(tagTds.get(0).text())) {
+                    prepareTextSchedule(text, shadow1);
                 }
             }
         }
 
         return text.toString();
     }
+
+    private void prepareTextDate(StringBuilder text, Element element) {
+        text.append("\n");
+        text.append("\n");
+        centerDateText(text);
+        centerDateText(text);
+        text.append("*").append(element.getElementsByTag(TagEnum.TD.getName()).text()).append("*");
+        centerDateText(text);
+        centerDateText(text);
+    }
+
+    private void prepareTextSchedule(StringBuilder text, Elements elements) {
+        elements.stream()
+                .map(Element::text)
+                .filter(str -> Character.isDigit(str.charAt(0)) && str.charAt(1) == 32)
+                .forEach(str -> {
+                            if (dateValidation.validate()) {
+                                text.append("\n");
+                            }
+                            text.append("_").append(str.replace(" ", "  ")).append("_");
+                        }
+                );
+    }
+
 
     private void centerDateText(StringBuilder text) {
         text.append('\t');
