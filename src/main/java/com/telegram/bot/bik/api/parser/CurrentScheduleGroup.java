@@ -1,6 +1,7 @@
 package com.telegram.bot.bik.api.parser;
 
-import com.telegram.bot.bik.validation.DateValidation;
+import com.telegram.bot.bik.enums.AttributeEnum;
+import com.telegram.bot.bik.enums.TagEnum;
 import com.telegram.bot.bik.validation.Validable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,13 +11,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class CurrentScheduleGroup {
+
+    public static final String COLOR_DATE_SCHEDULE = "#E0FFFF";
+
     private final ConnectionToSite connectionToSite;
     private final Validable dateValidation;
 
@@ -28,7 +29,7 @@ public class CurrentScheduleGroup {
             String group = element.text();
             String[] fullNameGroup = group.split(" ");
             if (fullNameGroup[0].equals(id) && name.equals(fullNameGroup[1])) {
-                String fullTagHref = element.attr("href"); // аттрибут href у тега a
+                String fullTagHref = element.attr(AttributeEnum.HREF.getName());
                 String[] hrefWithTrash = fullTagHref.split("=");
                 return hrefWithTrash[1];
             }
@@ -40,29 +41,29 @@ public class CurrentScheduleGroup {
     public String parseSchedule(String id, String name) {
         String idForCurrentGroup = findIdForCurrentGroup(id, name);
         Document document = connectionToSite.connectionToCurrentSchedule(idForCurrentGroup);
-        Elements shadow = document.getElementsByTag("tr");
+        Elements shadow = document.getElementsByTag(TagEnum.TR.getName());
 
         StringBuilder text = new StringBuilder();
         for (Element element : shadow) {
-            String style = element.childNodes().get(0).attributes().get("bgcolor");
-            if (style.equals("#E0FFFF")) {
+            String style = element.childNodes().get(0).attributes().get(TagEnum.BG_COLOR.getName());
+            if (style.equals(COLOR_DATE_SCHEDULE)) {
                 text.append('\n');
                 text.append('\n');
                 centerDateText(text);
                 centerDateText(text);
                 text.append("*");
-                text.append(element.getElementsByTag("td").text());
+                text.append(element.getElementsByTag(TagEnum.TD.getName()).text());
                 text.append("*");
                 centerDateText(text);
                 centerDateText(text);
 
             }
 
-            Elements shadow1 = element.getElementsByClass("shadow");
+            Elements shadow1 = element.getElementsByClass(TagEnum.SHADOW.getName());
             if (!shadow1.isEmpty()) {
                 for (int i = 0; i < shadow1.size(); i++) {
-                    Elements td = shadow1.get(i).getElementsByTag("td");
-                    if (!td.isEmpty() && StringUtils.isNumeric(shadow1.get(0).getElementsByTag("td").get(0).text())) {
+                    Elements td = shadow1.get(i).getElementsByTag(TagEnum.TD.getName());
+                    if (!td.isEmpty() && StringUtils.isNumeric(shadow1.get(0).getElementsByTag(TagEnum.TD.getName()).get(0).text())) {
                         for (Element element1 : shadow1) {
                             if (dateValidation.validate()) {
                                 text.append('\n');

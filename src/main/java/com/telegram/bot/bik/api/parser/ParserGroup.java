@@ -7,7 +7,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -21,13 +22,6 @@ public class ParserGroup {
 
         Elements elementsByClassShadow = document.getElementsByClass(MODERNSMALL);
         List<String> groupsByCurrentName = new ArrayList<>();
-//        elementsByClassShadow.forEach(element -> {
-//            String name = element.text();
-//            String[] fullNameGroup = name.split(" ");
-//            String nameGroup = fullNameGroup[1];
-//            String idGroup = fullNameGroup[2];
-//            groupsByCurrentName.put(nameGroup, idGroup);
-//        });
         for (Element element : elementsByClassShadow) {
             String name = element.text();
             String[] fullNameGroup = name.split(" ");
@@ -40,5 +34,4 @@ public class ParserGroup {
 
         return groupsByCurrentName;
     }
-
 }
