@@ -1,7 +1,6 @@
 package com.telegram.bot.bik.api.telegram;
 
 import com.telegram.bot.bik.api.telegram.commands.HandleCommand;
-import com.telegram.bot.bik.api.telegram.handler.core.StateContext;
 import com.telegram.bot.bik.config.properties.TelegramProperties;
 import com.telegram.bot.bik.map.CallbackMap;
 import com.telegram.bot.bik.map.CommandMap;
@@ -23,7 +22,6 @@ public class Bot extends TelegramLongPollingBot {
     private final TelegramProperties telegramProperties;
     private final CallbackMap callbackMap;
     private final CommandMap commandMap;
-    private final StateContext stateContext;
 
     @SneakyThrows
     @Override
@@ -34,8 +32,6 @@ public class Bot extends TelegramLongPollingBot {
         }else if (update.hasMessage()) {
             if (isCommand(message)) {
                 handleCommand(message);
-            } else if (message.hasText()){
-                execute(stateContext.getHandler(message.getChatId(), message));
             }
         }
     }

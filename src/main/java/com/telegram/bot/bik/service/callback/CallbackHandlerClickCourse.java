@@ -1,43 +1,55 @@
-package com.telegram.bot.bik.api.telegram.handler.core;
+package com.telegram.bot.bik.service.callback;
 
-import com.telegram.bot.bik.api.parser.ParserNameSpecialization;
-import com.telegram.bot.bik.enums.StateEnum;
-import com.telegram.bot.bik.service.StateService;
-import com.telegram.bot.bik.service.impl.StudentServiceImpl;
+import com.telegram.bot.bik.enums.CallbackNameEnum;
+import com.telegram.bot.bik.model.entity.Group;
+import com.telegram.bot.bik.model.entity.Student;
+import com.telegram.bot.bik.repository.GroupRepository;
+import com.telegram.bot.bik.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static com.telegram.bot.bik.enums.CallbackNameEnum.MY_GROUP_SCHEDULE;
 import static com.telegram.bot.bik.enums.CallbackNameEnum.OTHER_GROUP_SCHEDULE;
-import static com.telegram.bot.bik.enums.CallbackNameEnum.SPECIALIZATION;
 
 @Service
 @RequiredArgsConstructor
-public class SaveGroupMessageHandler implements MessageHandler {
-    private final StudentServiceImpl service;
-    private final ParserNameSpecialization parserNameSpecialization;
+public class CallbackHandlerClickCourse implements HandleCallback {
 
+    private final GroupRepository groupRepository;
+    private final StudentRepository studentRepository;
 
     @Override
-    public BotApiMethod<?> handle(Message message) {
-        String group = message.getText();
-        service.save(message.getChatId(), group);
+    public BotApiMethod<?> buildMessageByCallback(CallbackQuery callbackQuery) {
+        Message message = callbackQuery.getMessage();
+        String course = callbackQuery.getData().split("/")[1];
+        String group = callbackQuery.getData().split("/")[2];
+        Long chatId = message.getChatId();
 
+        Student student = new Student();
+        student.setCourse(course);
+        student.setTelegramId(chatId);
+        student.setGroup(getGroup(group));
+        studentRepository.save(student);
         return SendMessage.builder()
                 .text("Вас приветствует бот, позволящий просмотреть расписание " +
                         "Белгородского индустриального колледжа. ")
                 .chatId(message.getChatId())
                 .replyMarkup(buildKeyboard())
                 .build();
+    }
+
+    private Group getGroup(String name) {
+        return groupRepository.findByName(name)
+                .orElseThrow();
     }
 
     private InlineKeyboardMarkup buildKeyboard() {
@@ -63,18 +75,10 @@ public class SaveGroupMessageHandler implements MessageHandler {
                 .build();
     }
 
-    @Override
-    public void previousState() {
 
-    }
 
     @Override
-    public void nextState(Long telegramId) {
-
-    }
-
-    @Override
-    public StateEnum getState() {
-        return StateEnum.END_ASK_GROUP_NAME;
+    public CallbackNameEnum getSupportedCallback() {
+        return CallbackNameEnum.CLICK_COURSE;
     }
 }

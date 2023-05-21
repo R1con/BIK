@@ -1,33 +1,76 @@
 package com.telegram.bot.bik.api.telegram.commands;
 
-import com.telegram.bot.bik.api.telegram.handler.core.MessageHandler;
-import com.telegram.bot.bik.api.telegram.handler.core.StateFactory;
 import com.telegram.bot.bik.enums.CommandEnum;
-import com.telegram.bot.bik.enums.StateEnum;
-import com.telegram.bot.bik.service.StateService;
+import com.telegram.bot.bik.model.entity.Group;
+import com.telegram.bot.bik.repository.GroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
+
+import static com.telegram.bot.bik.enums.CallbackNameEnum.CLICK_GROUP_NAME;
 
 @Component
 @RequiredArgsConstructor
 public class HandleCommandStart implements HandleCommand {
-    public static final Set<String> COMMANDS = Set.of(CommandEnum.START.getCommand());
 
-    private final StateService stateService;
-    private final StateFactory stateFactory;
+    private static final Set<String> COMMANDS = Set.of(CommandEnum.START.getCommand());
+    private static final int SIZE_KEYBOARD_ROW = 4;
+
+    private final GroupRepository groupRepository;
 
     @Override
     public BotApiMethod<?> buildMessageByCommand(Message message)  {
-        stateService.save(message.getChatId(), StateEnum.START_ASK_GROUP_NAME);
-        MessageHandler messageHandler = stateFactory.getMessageHandler(StateEnum.START_ASK_GROUP_NAME);
+        var groups = groupRepository.findAll()
+                .stream()
+                .map(Group::getName)
+                .toList();
 
-        return messageHandler.handle(message);
+        return SendMessage.builder()
+                .text("Выберите группу:")
+                .chatId(message.getChatId())
+                .replyMarkup(buildKeyboard(groups))
+                .parseMode(ParseMode.MARKDOWN)
+                .build();
 
+    }
+
+    private InlineKeyboardMarkup buildKeyboard(List<String> groups) {
+        List<List<InlineKeyboardButton>> allButtons = new ArrayList<>();
+        List<InlineKeyboardButton> row1 = new ArrayList<>();
+        for (String specialization : groups) {
+            row1.add(InlineKeyboardButton.builder()
+                    .text(specialization)
+                    .callbackData(CLICK_GROUP_NAME + "/" + specialization)
+                    .build());
+
+            if (row1.size() == SIZE_KEYBOARD_ROW) {
+                generateNewRow(allButtons, row1);
+            }
+        }
+
+        if (row1.size() < SIZE_KEYBOARD_ROW) {
+            allButtons.add(row1);
+        }
+
+        return InlineKeyboardMarkup.builder()
+                .keyboard(allButtons)
+                .build();
+    }
+
+    private static void generateNewRow(List<List<InlineKeyboardButton>> allButtons, List<InlineKeyboardButton> row1) {
+        List<InlineKeyboardButton> buttons = new ArrayList<>(row1);
+        allButtons.add(buttons);
+        row1.clear();
     }
 
     @Override
