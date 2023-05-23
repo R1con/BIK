@@ -1,11 +1,14 @@
 bik:
-    schedule: https://bincol.ru/rasp/grupp.php
-    group: https://bincol.ru/rasp/view.php?id=
+    schedule: ${SCHEDULE_CPO}
+    group: ${SCHEDULE_GROUP}
 telegram:
     botName: ${BOT_NAME}
     token: ${BOT_TOKEN}
 
 spring:
+    h2:
+        console:
+            enabled: true
     datasource:
         url: jdbc:h2:file:./testdb
         username: sa
@@ -14,3 +17,9 @@ spring:
         hibernate:
             ddl-auto: update
         generate-ddl: true
+
+schedule:
+    cron:
+        group: "0 1 1 * * ?"
+        expression: "0 0 20 * * *"
+    timeZone: "Europe/Moscow"
