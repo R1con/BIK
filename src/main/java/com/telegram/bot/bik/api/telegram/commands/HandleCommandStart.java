@@ -3,6 +3,8 @@ package com.telegram.bot.bik.api.telegram.commands;
 import com.telegram.bot.bik.enums.CommandEnum;
 import com.telegram.bot.bik.model.entity.Group;
 import com.telegram.bot.bik.repository.GroupRepository;
+import com.telegram.bot.bik.repository.StudentRepository;
+import com.telegram.bot.bik.service.MenuSelectGroup;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.telegram.bot.bik.enums.CallbackNameEnum.CLICK_GROUP_NAME;
+import static com.telegram.bot.bik.utils.ButtonBuilder.buildInlineButton;
 
 @Component
 @RequiredArgsConstructor
@@ -27,9 +30,14 @@ public class HandleCommandStart implements HandleCommand {
     private static final int SIZE_KEYBOARD_ROW = 4;
 
     private final GroupRepository groupRepository;
+    private final StudentRepository studentRepository;
+    private final MenuSelectGroup menuSelectGroup;
 
     @Override
     public BotApiMethod<?> buildMessageByCommand(Message message)  {
+        if (studentRepository.existsByTelegramId(message.getChatId())) {
+            // TODO: 22.05.2023 build menu keyboard
+        }
         var groups = groupRepository.findAll()
                 .stream()
                 .map(Group::getName)
@@ -48,10 +56,7 @@ public class HandleCommandStart implements HandleCommand {
         List<List<InlineKeyboardButton>> allButtons = new ArrayList<>();
         List<InlineKeyboardButton> row1 = new ArrayList<>();
         for (String specialization : groups) {
-            row1.add(InlineKeyboardButton.builder()
-                    .text(specialization)
-                    .callbackData(CLICK_GROUP_NAME + "/" + specialization)
-                    .build());
+            row1.add(buildInlineButton(CLICK_GROUP_NAME + "/" + specialization, specialization));
 
             if (row1.size() == SIZE_KEYBOARD_ROW) {
                 generateNewRow(allButtons, row1);
