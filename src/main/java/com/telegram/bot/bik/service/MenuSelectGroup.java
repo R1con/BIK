@@ -1,53 +1,46 @@
 package com.telegram.bot.bik.service;
 
-import com.telegram.bot.bik.enums.CallbackNameEnum;
+import com.telegram.bot.bik.config.properties.MessageProperties;
+import com.telegram.bot.bik.model.enums.CallbackNameEnum;
 import com.telegram.bot.bik.service.callback.HandleCallback;
+import com.telegram.bot.bik.utils.MessageBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import static com.telegram.bot.bik.enums.CallbackNameEnum.MENU_SELECT_GROUP;
-import static com.telegram.bot.bik.enums.CallbackNameEnum.MY_GROUP_SCHEDULE;
-import static com.telegram.bot.bik.enums.CallbackNameEnum.OTHER_GROUP_SCHEDULE;
+import static com.telegram.bot.bik.model.enums.CallbackNameEnum.*;
+import static com.telegram.bot.bik.utils.ButtonBuilder.buildInlineButton;
 
 @Service
 @RequiredArgsConstructor
 public class MenuSelectGroup implements HandleCallback {
+
+    private final MessageProperties messageProperties;
+
     @Override
-    public BotApiMethod<?> buildMessageByCallback(CallbackQuery callbackQuery) {
+    public BotApiMethod<?> handle(CallbackQuery callbackQuery) {
         Message message = callbackQuery.getMessage();
-         return EditMessageText.builder()
-                .text("Вас приветствует бот, позволящий просмотреть расписание " +
-                        "Белгородского индустриального колледжа. ")
-                .chatId(message.getChatId())
-                 .messageId(callbackQuery.getMessage().getMessageId())
-                .replyMarkup(buildKeyboard())
-                .build();
+        return MessageBuilder.buildEditMessageText(messageProperties.getStartTitle(), message.getChatId(),
+                message.getMessageId(), buildKeyboard());
     }
 
     private InlineKeyboardMarkup buildKeyboard() {
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        buttons.add(List.of(
-                        InlineKeyboardButton.builder()
-                                .text("Моя группа")
-                                .callbackData(MY_GROUP_SCHEDULE.toString())
-                                .build()
+        buttons.add(Collections.singletonList(
+                        buildInlineButton(MY_GROUP_SCHEDULE.toString(), messageProperties.getMyGroup())
                 )
         );
 
-        buttons.add(List.of(
-                        InlineKeyboardButton.builder()
-                                .text("Другие группы")
-                                .callbackData(OTHER_GROUP_SCHEDULE.toString())
-                                .build()
+        buttons.add(Collections.singletonList(
+                        buildInlineButton(OTHER_GROUP_SCHEDULE.toString(), messageProperties.getOtherGroup())
                 )
         );
 

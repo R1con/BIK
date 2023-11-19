@@ -1,4 +1,4 @@
-package com.telegram.bot.bik.enums;
+package com.telegram.bot.bik.model.enums;
 
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.telegram.bot.bik.service.scheduler;
+package com.telegram.bot.bik.service.jobs;
 
 import com.telegram.bot.bik.api.parser.ParserNameSpecialization;
 import com.telegram.bot.bik.service.interfaces.GroupService;
@@ -21,7 +21,8 @@ public class ScheduleInvokerGroup {
     public void invokeGroup() {
         log.info("[NOTIFCATION] search group start");
         List<String> specializations = parserNameSpecialization.parseSpecialization()
-                        .stream().toList();
+                .stream()
+                .toList();
         groupService.saveAll(specializations);
         log.info("[NOTIFCATION] search group end");
 

@@ -31,4 +31,9 @@ public class GroupServiceImpl implements GroupService {
             save(name);
         }
     }
+
+    @Override
+    public List<Group> findAll() {
+        return groupRepository.findAll();
+    }
 }

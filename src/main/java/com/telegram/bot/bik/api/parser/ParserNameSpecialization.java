@@ -1,6 +1,6 @@
 package com.telegram.bot.bik.api.parser;
 
-import com.telegram.bot.bik.enums.TagEnum;
+import com.telegram.bot.bik.model.enums.TagEnum;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

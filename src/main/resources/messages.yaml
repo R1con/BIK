@@ -1,0 +1,15 @@
+message:
+  startTitle: "Вас приветствует бот, позволящий просмотреть расписание Белгородского индустриального колледжа. "
+  myGroup: "Моя группа"
+  otherGroup: "Другие группы"
+  selectedGroup: "Выбранная группа: "
+  chooseCourse: "Выберите курс:"
+  chooseGroup: "Выберите группу: "
+
+buttons:
+  menu: "\uD83C\uDFE1 Меню"
+  course: "Курс группы "
+  groups: "Группы"
+  back: "⬅️ Назад"
+  myGroup: "Моя группа"
+  otherGroup: "Другие группы"

@@ -1,6 +1,7 @@
 package com.telegram.bot.bik;
 
-import com.telegram.bot.bik.service.scheduler.SchedulerInvoker;
+import com.telegram.bot.bik.service.jobs.ScheduleInvokerGroup;
+import com.telegram.bot.bik.service.jobs.SchedulerInvoker;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,12 +16,16 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class BikApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(BikApplication.class, args);
+
 	}
 
 	@Bean
 	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+
 		return args -> {
 			SchedulerInvoker invoker = ctx.getBean(SchedulerInvoker.class);
+			ScheduleInvokerGroup invokerGroup = ctx.getBean(ScheduleInvokerGroup.class);
+			invokerGroup.invokeGroup();
 			invoker.invoke();
 		};
 	}

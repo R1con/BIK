@@ -1,11 +1,12 @@
-package com.telegram.bot.bik.service.callback;
+package com.telegram.bot.bik.service.callback.impl;
 
 import com.telegram.bot.bik.api.parser.ParserGroup;
-import com.telegram.bot.bik.enums.CallbackNameEnum;
+import com.telegram.bot.bik.config.properties.MessageProperties;
+import com.telegram.bot.bik.model.enums.CallbackNameEnum;
+import com.telegram.bot.bik.service.callback.HandleCallback;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -13,27 +14,25 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.telegram.bot.bik.enums.CallbackNameEnum.CLICK_COURSE;
+import static com.telegram.bot.bik.model.enums.CallbackNameEnum.CLICK_COURSE;
 import static com.telegram.bot.bik.utils.ButtonBuilder.buildInlineButton;
+import static com.telegram.bot.bik.utils.MessageBuilder.buildSendMessage;
 
 @Service
 @RequiredArgsConstructor
 public class CallbackHandleClickGroup implements HandleCallback {
 
-    public static final int SIZE_KEYBOARD_ROW = 4;
+    private static final int SIZE_KEYBOARD_ROW = 4;
 
     private final ParserGroup parserGroup;
+    private final MessageProperties messageProperties;
 
     @Override
-    public BotApiMethod<?> buildMessageByCallback(CallbackQuery callbackQuery) {
+    public BotApiMethod<?> handle(CallbackQuery callbackQuery) {
         String group = callbackQuery.getData().split("/")[1];
         List<String> groups = parserGroup.parse(group);
 
-        return SendMessage.builder()
-                .text("Выберите курс:")
-                .replyMarkup(buildKeyboard(groups, group))
-                .chatId(callbackQuery.getMessage().getChatId())
-                .build();
+        return buildSendMessage(callbackQuery.getMessage().getChatId(), messageProperties.getChooseCourse(), buildKeyboard(groups, group));
     }
 
     private InlineKeyboardMarkup buildKeyboard(List<String> groups, String group) {
@@ -58,7 +57,7 @@ public class CallbackHandleClickGroup implements HandleCallback {
                 .build();
     }
 
-    private static void generateNextRow(List<List<InlineKeyboardButton>> specializationButtons, List<InlineKeyboardButton> row1) {
+    private void generateNextRow(List<List<InlineKeyboardButton>> specializationButtons, List<InlineKeyboardButton> row1) {
         List<InlineKeyboardButton> buttons = new ArrayList<>(row1);
         specializationButtons.add(buttons);
         row1.clear();
